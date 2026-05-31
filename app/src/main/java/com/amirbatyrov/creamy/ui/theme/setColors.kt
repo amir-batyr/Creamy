@@ -1,8 +1,8 @@
-package com.amirbatyrov.creamy
+package com.amirbatyrov.creamy.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val colors = arrayOf(
+val setColors = arrayOf(
     // Row 1: Reds & Pinks
     Color(0xFFE53935), // Vibrant Red
     Color(0xFFD81B60), // Deep Pink

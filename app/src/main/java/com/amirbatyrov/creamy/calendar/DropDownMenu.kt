@@ -1,7 +1,6 @@
-package com.amirbatyrov.creamy
+package com.amirbatyrov.creamy.calendar
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
@@ -17,17 +16,12 @@ fun DropDownMenu(
     value: MutableState<String>,
     items: Array<String>,
     modifier: Modifier = Modifier,
-    selected: MutableState<Boolean> = remember { mutableStateOf(false) }
 ) {
     val expanded = remember { mutableStateOf(false) }
     Box(
         modifier = modifier
     ) {
-        if (!selected.value) {
-            OutlinedButton(onClick = { expanded.value = !expanded.value }) { Text(value.value) }
-        } else {
-            Button(onClick = { expanded.value = !expanded.value }) { Text(value.value) }
-        }
+        OutlinedButton(onClick = { expanded.value = !expanded.value }) { Text(value.value) }
         DropdownMenu(
             expanded = expanded.value,
             onDismissRequest = {
@@ -39,7 +33,7 @@ fun DropDownMenu(
                     text = { Text(option) },
                     onClick = {
                         value.value = option
-                        selected.value = true
+                        println(option)
                     }
                 )
             }

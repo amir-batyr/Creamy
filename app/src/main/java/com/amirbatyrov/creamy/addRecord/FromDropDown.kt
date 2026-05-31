@@ -1,15 +1,9 @@
-package com.amirbatyrov.creamy
+package com.amirbatyrov.creamy.addRecord
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -22,66 +16,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-
-@Composable
-fun AddRecordDialog(
-    openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
-    context: Context
-) {
-    if (openDialog.value) {
-
-        Dialog(onDismissRequest = { openDialog.value = false }) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(color = MaterialTheme.colorScheme.background),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Read data into arrays
-                val creams = mutableListOf<String>()
-                val areas = mutableListOf<String>()
-                try {
-                    context.openFileInput("Cream.csv").bufferedReader()
-                        .useLines { lines -> lines.forEach { line -> creams.add(line.split(",")[0]) } }
-                    context.openFileInput("Area.csv").bufferedReader()
-                        .useLines { lines -> lines.forEach { line -> areas.add(line) } }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                val cream = remember { mutableStateOf("Cream") }
-                val area = remember { mutableStateOf("Area") }
-                val creamEdit = remember { mutableStateOf(false) }
-                val areaEdit = remember { mutableStateOf(false) }
-                SelectionEditMenu(creamEdit, "Cream", context)
-                SelectionEditMenu(areaEdit, "Area", context)
-
-
-                Text("Add to Record", fontSize = 24.sp)
-                FormDropDown(cream, creams.toTypedArray(), onClick = { creamEdit.value = true })
-                FormDropDown(area, areas.toTypedArray(), onClick = { areaEdit.value = true })
-                Button(
-                    onClick = { println("Added $cream and $area") },
-                ) { Text("Add") }
-            }
-        }
-    }
-}
+import com.amirbatyrov.creamy.R
+import com.amirbatyrov.creamy.ui.theme.setColors
 
 @Composable
 fun FormDropDown(
     value: MutableState<String>,
-    items: Array<String>,
+    items: List<String>,
+    colors: List<Int>? = null,
     modifier: Modifier = Modifier,
     selected: MutableState<Boolean> = remember { mutableStateOf(false) },
     onClick: () -> Unit
@@ -115,13 +62,21 @@ fun FormDropDown(
                             expanded.value = false
                         }
                     ) {
-                        items.forEach { option ->
+                        for (i in 0 until items.size) {
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = {
+                                    Text(
+                                        items[i],
+                                        color = if (colors != null) Color.White else MaterialTheme.colorScheme.onBackground
+                                    )
+                                },
                                 onClick = {
-                                    value.value = option
+                                    value.value = items[i]
                                     selected.value = true
-                                }
+                                },
+                                modifier = if (colors != null) Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(color = setColors[colors[i]]) else Modifier
                             )
                         }
                     }
