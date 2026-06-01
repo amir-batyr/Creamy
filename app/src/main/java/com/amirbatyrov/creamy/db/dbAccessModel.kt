@@ -14,7 +14,7 @@ class dbAccessModel(private val db: CreamyDB) : ViewModel() {
     private val _areaState = MutableStateFlow<List<Area>>(emptyList())
     val areaState = _areaState.asStateFlow()
 
-    private val _recordState = MutableStateFlow<List<creamColor>>(emptyList())
+    private val _recordState = MutableStateFlow<List<CreamColor>>(emptyList())
     val recordState = _recordState.asStateFlow()
 
     fun load() {

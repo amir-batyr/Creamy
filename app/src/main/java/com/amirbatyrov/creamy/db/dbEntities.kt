@@ -1,0 +1,53 @@
+package com.amirbatyrov.creamy.db
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+class Converters {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE // Format: YYYY-MM-DD
+
+    @TypeConverter
+    fun fromString(value: String?): LocalDate? {
+        return value?.let { LocalDate.parse(it, formatter) }
+    }
+
+    @TypeConverter
+    fun localDateToString(date: LocalDate?): String? {
+        return date?.format(formatter)
+    }
+}
+sealed interface CreamOrArea {
+    val name: String
+}
+@Entity
+data class Cream(
+    @PrimaryKey(autoGenerate = true) val cid: Long,
+    override val name: String,
+    val color: Int,
+)  : CreamOrArea {
+    constructor(name: String, color: Int) : this (cid = 0, name = name, color = color)
+}
+
+@Entity
+data class Area(
+    @PrimaryKey(autoGenerate = true)
+    val aid: Long,
+    override val name: String
+) : CreamOrArea {
+    constructor(name: String) : this (aid = 0, name = name)
+}
+
+
+@Entity(
+    primaryKeys = ["cid", "aid", "date"],
+    foreignKeys = [ForeignKey(entity = Cream::class, parentColumns = ["cid"], childColumns = ["cid"]),
+        ForeignKey(entity = Area::class, parentColumns = ["aid"], childColumns = ["aid"])]
+) data class record(
+    val cid: Long,
+    val aid: Long,
+    val date: LocalDate
+)
