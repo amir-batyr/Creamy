@@ -86,7 +86,7 @@ fun Calendar(
                                 records.value,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                MaterialTheme.colorScheme.onBackground
+                                dbAccess
                             )
                         } else if (i >= selectedMonth.lengthOfMonth() + firstDay) {
                             // Add the next month's dates
@@ -96,7 +96,7 @@ fun Calendar(
                                 records.value,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                MaterialTheme.colorScheme.secondary
+                                dbAccess
                             )
                         } else {
                             // Add the previous month's dates
@@ -107,7 +107,7 @@ fun Calendar(
                                 records.value,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                MaterialTheme.colorScheme.secondary
+                                dbAccess
                             )
 
                         }

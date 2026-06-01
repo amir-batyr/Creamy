@@ -44,6 +44,9 @@ interface recordDao {
     @Insert
     fun insertAll(vararg record: record)
 
+    @Delete
+    fun delete(vararg record: record)
+
     @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE record.date BETWEEN :start AND :end AND Cream.cid = record.cid AND Area.aid = record.aid")
     fun getRecordsBetween(start: LocalDate, end: LocalDate): List<CreamColor>
 

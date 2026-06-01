@@ -1,6 +1,5 @@
 package com.amirbatyrov.creamy.addRecord
 
-import android.text.TextUtils.replace
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -22,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -62,14 +62,14 @@ fun AddMenu(
             ) {
 
                 val newValue = rememberTextFieldState()
-                val color = remember { mutableStateOf(0) }
-                var error = remember { mutableStateOf("") }
+                val color = remember { mutableIntStateOf(0) }
+                val error = remember { mutableStateOf("") }
 
                 LaunchedEffect(Unit) {
                     if (pos.value != -1) {
                         val item = items[pos.value]
                         if (item is Cream) {
-                            color.value = item.color
+                            color.intValue = item.color
                         }
                         newValue.edit { replace(0, length, item.name) }
                     }
@@ -85,14 +85,14 @@ fun AddMenu(
                     LazyVerticalGrid(columns = GridCells.Fixed(5)) {
                         items(20) { index ->
                             Button(
-                                onClick = { color.value = index },
+                                onClick = { color.intValue = index },
                                 modifier = Modifier
                                     .weight(1f)
                                     .aspectRatio(1f)
                                     .padding(5.dp),
                                 shape = CircleShape,
                                 colors = ButtonDefaults.buttonColors(containerColor = setColors[index]),
-                                border = if (color.value == index) {
+                                border = if (color.intValue == index) {
                                     BorderStroke(color = Color.White, width = 2.dp)
                                 } else {
                                     BorderStroke(color = Color.White, width = 0.dp)
@@ -103,7 +103,7 @@ fun AddMenu(
                 }
                 OutlinedTextField(
                     state = newValue,
-                    label = { Text(text = if (error.value.isNotEmpty()) error.value else title) },
+                    label = { Text(text = error.value.ifEmpty { title }) },
                     isError = error.value.isNotEmpty()
                 )
 
@@ -126,7 +126,7 @@ fun AddMenu(
                                                 Cream(
                                                     item.cid,
                                                     newValue.text.toString(),
-                                                    color.value,
+                                                    color.intValue,
                                                 )
                                             )
 
@@ -142,7 +142,7 @@ fun AddMenu(
 
                                         if (title == "Cream") {
                                             dbAccess.insertCream(
-                                                Cream(newValue.text.toString(), color.value)
+                                                Cream(newValue.text.toString(), color.intValue)
                                             )
 
                                         } else {

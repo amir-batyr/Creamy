@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SplitButtonDefaults
 import androidx.compose.material3.SplitButtonLayout
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.amirbatyrov.creamy.R
@@ -65,7 +66,7 @@ fun SelectionEditMenu(
             ) {
 
                 Text("Edit ${title}s", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
-                val pos = remember { mutableStateOf(-1) }
+                val pos = remember { mutableIntStateOf(-1) }
                 val add = remember { mutableStateOf(false) }
 
                 if (items.isNotEmpty()) {
@@ -77,7 +78,7 @@ fun SelectionEditMenu(
                                 leadingButton = {
                                     SplitButtonDefaults.LeadingButton(
                                         onClick = {
-                                            pos.value = index
+                                            pos.intValue = index
                                             add.value = true
                                         },
                                         colors =

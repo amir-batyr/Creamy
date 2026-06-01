@@ -73,6 +73,16 @@ class dbAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
+    fun deleteRecord(cream: String, area: String, date: LocalDate) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cid = _creamState.value.find { it.name == cream }
+            val aid = _areaState.value.find { it.name == area }
+            if (cid != null && aid != null) {
+                db.recordDao().delete(record(cid.cid,aid.aid,date))
+            }
+        }
+    }
+
     fun update(cream: Cream) {
         viewModelScope.launch(Dispatchers.IO) {
             db.CreamDao().update(cream)
