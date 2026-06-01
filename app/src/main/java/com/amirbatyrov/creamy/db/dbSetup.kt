@@ -31,31 +31,35 @@ class Converters {
         return date?.format(formatter)
     }
 }
-
+sealed interface CreamOrArea {
+    val name: String
+}
 @Entity
 data class Cream(
     @PrimaryKey(autoGenerate = true) val cid: Long,
-    val name: String,
+    override val name: String,
     val color: Int,
-) {
+)  : CreamOrArea {
     constructor(name: String, color: Int) : this (cid = 0, name = name, color = color)
 }
 
 @Entity
 data class Area(
-    @PrimaryKey(autoGenerate = true) val aid: Long,
-    val name: String
-) {
+    @PrimaryKey(autoGenerate = true)
+    val aid: Long,
+    override val name: String
+) : CreamOrArea {
     constructor(name: String) : this (aid = 0, name = name)
 }
+
 
 @Entity(
     primaryKeys = ["cid", "aid", "date"],
     foreignKeys = [ForeignKey(entity = Cream::class, parentColumns = ["cid"], childColumns = ["cid"]),
         ForeignKey(entity = Area::class, parentColumns = ["aid"], childColumns = ["aid"])]
 ) data class record(
-    val cid: String,
-    val aid: String,
+    val cid: Long,
+    val aid: Long,
     val date: LocalDate
 )
 
@@ -64,8 +68,6 @@ interface CreamDao {
     @Query("SELECT * FROM Cream")
     suspend fun getAll(): List<Cream>
 
-    @Query("SELECT color FROM Cream")
-    suspend fun getColors(): List<Int>
     @Insert
     fun insertAll(vararg cream: Cream)
 
@@ -78,8 +80,8 @@ interface CreamDao {
 
 @Dao
 interface AreaDao {
-    @Query("SELECT name FROM Area")
-    suspend fun getAll(): List<String>
+    @Query("SELECT * FROM Area")
+    suspend fun getAll(): List<Area>
     @Insert
     fun insertAll(vararg area: Area)
 

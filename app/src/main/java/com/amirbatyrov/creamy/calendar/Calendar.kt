@@ -36,7 +36,6 @@ fun Calendar(
 ) {
     dbAccess.load()
     val creams by dbAccess.creamState.collectAsState()
-    val colors by dbAccess.colorState.collectAsState()
     val areas by dbAccess.areaState.collectAsState()
 
     Column(
@@ -85,7 +84,8 @@ fun Calendar(
                 (2020..LocalDate.now().year).map { it.toString() }.toTypedArray(),
                 modifier
             )
-            DropDownMenu(filter, arrayOf("All", *areas.toTypedArray()), modifier)
+            val areaNames = areas.map { it -> it.name}.toTypedArray()
+            DropDownMenu(filter, arrayOf("All", *areaNames), modifier)
         }
 
         // Days Row

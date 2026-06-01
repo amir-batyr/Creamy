@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.amirbatyrov.creamy.db.Area
 import com.amirbatyrov.creamy.db.Cream
+import com.amirbatyrov.creamy.db.CreamOrArea
 import com.amirbatyrov.creamy.db.dbAccessModel
 import com.amirbatyrov.creamy.ui.theme.setColors
 
@@ -40,10 +41,9 @@ import com.amirbatyrov.creamy.ui.theme.setColors
 fun AddMenu(
     openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
     title: String,
-    items: List<String>,
+    items: List<CreamOrArea>,
     dbAccess: dbAccessModel,
-    pos: MutableState<Int>,
-    colors: List<Int>? = null,
+    pos: MutableState<Int>
 ) {
     if (openDialog.value) {
 
@@ -67,10 +67,11 @@ fun AddMenu(
 
                 LaunchedEffect(Unit) {
                     if (pos.value != -1) {
-                        newValue.edit { replace(0, length, items[pos.value]) }
-                        if (colors != null) {
-                            color.value = colors[pos.value]
+                        val item = items[pos.value]
+                        if (item is Cream) {
+                            color.value = item.color
                         }
+                        newValue.edit { replace(0, length, item.name) }
                     }
                 }
 
@@ -112,33 +113,34 @@ fun AddMenu(
                             // Validation
                             error.value = ""
 
+                            val names = items.map { it -> it.name }
                             when (newValue.text.toString()) {
                                 "" -> error.value = "Can't Be Empty"
-                                in items -> error.value = "Already Exists"
+                                in names -> error.value = "Already Exists"
                                 else -> {
                                     if (pos.value != -1) {
                                         // EDIT
-                                        if (colors != null) {
-                                            dbAccess.update(
-                                                Cream((pos.value + 1).toLong(),
+                                        val item = items[pos.value]
+                                        when (item) {
+                                            is Cream -> dbAccess.update(
+                                                Cream(
+                                                    item.cid,
                                                     newValue.text.toString(),
                                                     color.value,
-
                                                 )
                                             )
 
-                                        } else {
-                                            dbAccess.update(
+                                            is Area -> dbAccess.update(
                                                 Area(
-                                                    newValue.text.toString(),
-                                                    (pos.value + 1).toLong()
+                                                    item.aid, newValue.text.toString()
                                                 )
                                             )
                                         }
                                         pos.value = -1
                                     } else {
                                         // WRITE
-                                        if (colors != null) {
+
+                                        if (title == "Cream") {
                                             dbAccess.insertCream(
                                                 Cream(newValue.text.toString(), color.value)
                                             )

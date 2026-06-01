@@ -35,7 +35,6 @@ class MainActivity : ComponentActivity() {
                 val dbAccess = dbAccessModel(db)
                 dbAccess.load()
                 val creams by dbAccess.creamState.collectAsState()
-                val colors by dbAccess.colorState.collectAsState()
                 val areas by dbAccess.areaState.collectAsState()
 
                 val records by dbAccess.recordState.collectAsState()

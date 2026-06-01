@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import com.amirbatyrov.creamy.R
 import com.amirbatyrov.creamy.db.Area
 import com.amirbatyrov.creamy.db.Cream
+import com.amirbatyrov.creamy.db.CreamOrArea
 import com.amirbatyrov.creamy.db.dbAccessModel
 import com.amirbatyrov.creamy.ui.theme.setColors
 
@@ -45,9 +46,8 @@ import com.amirbatyrov.creamy.ui.theme.setColors
 fun SelectionEditMenu(
     openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
     title: String,
-    items: List<String>,
-    dbAccess: dbAccessModel,
-    colors: List<Int>? = null,
+    items: List<CreamOrArea>,
+    dbAccess: dbAccessModel
 ) {
     if (openDialog.value) {
         dbAccess.load()
@@ -72,7 +72,7 @@ fun SelectionEditMenu(
                     LazyColumn() {
 
                         items(items.size) { index ->
-
+                            val item = items[index]
                             SplitButtonLayout(
                                 leadingButton = {
                                     SplitButtonDefaults.LeadingButton(
@@ -81,35 +81,33 @@ fun SelectionEditMenu(
                                             add.value = true
                                         },
                                         colors =
-                                            if (colors != null)
+                                            if (item is Cream)
                                                 ButtonDefaults.buttonColors(
-                                                    containerColor = setColors[colors[index]]
+                                                    containerColor = setColors[item.color]
                                                 )
                                             else
                                                 ButtonDefaults.buttonColors()
                                     ) {
                                         Text(
-                                            items[index]
+                                            item.name
                                         )
                                     }
                                 },
                                 trailingButton = {
                                     SplitButtonDefaults.TrailingButton(
                                         onClick = {
-                                            if (colors != null) {
-                                                dbAccess.deleteCream(Cream((index+1).toLong(),items[index], colors[index]))
-                                            } else {
-                                                dbAccess.deleteArea(Area(items[index],(index+1).toLong()))
+                                            when (item) {
+                                               is Cream -> dbAccess.deleteCream(item)
+                                               is Area -> dbAccess.deleteArea(item)
                                             }
-
                                         },
                                         colors =
-                                            if (colors != null)
-                                                ButtonDefaults.buttonColors(
-                                                    containerColor = setColors[colors[index]]
+                                            when (item) {
+                                                is Cream -> ButtonDefaults.buttonColors(
+                                                    containerColor = setColors[item.color]
                                                 )
-                                            else
-                                                ButtonDefaults.buttonColors()
+                                                else -> ButtonDefaults.buttonColors()
+                                            }
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.delete),
@@ -131,11 +129,9 @@ fun SelectionEditMenu(
                     },
                     modifier = Modifier.padding(10.dp)
                 ) { Text("Add") }
-                if (colors != null) {
-                    AddMenu(add, title, items, dbAccess, pos, colors)
-                } else {
-                    AddMenu(add, title, items, dbAccess, pos)
-                }
+
+                AddMenu(add, title, items, dbAccess, pos)
+
             }
         }
     }

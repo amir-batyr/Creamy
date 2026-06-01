@@ -9,11 +9,9 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class dbAccessModel(private val db: CreamyDB) : ViewModel() {
-    private val _creamState = MutableStateFlow<List<String>>(emptyList())
+    private val _creamState = MutableStateFlow<List<Cream>>(emptyList())
     val creamState = _creamState.asStateFlow()
-    private val _colorState = MutableStateFlow<List<Int>>(emptyList())
-    val colorState = _colorState.asStateFlow()
-    private val _areaState = MutableStateFlow<List<String>>(emptyList())
+    private val _areaState = MutableStateFlow<List<Area>>(emptyList())
     val areaState = _areaState.asStateFlow()
 
     private val _recordState = MutableStateFlow<List<creamColor>>(emptyList())
@@ -22,8 +20,7 @@ class dbAccessModel(private val db: CreamyDB) : ViewModel() {
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             val creams = db.CreamDao().getAll()
-            _creamState.value = creams.map { it -> it.name }
-            _colorState.value = creams.map { it -> it.color }
+            _creamState.value = creams
             val areas = db.AreaDao().getAll()
             _areaState.value = areas
         }

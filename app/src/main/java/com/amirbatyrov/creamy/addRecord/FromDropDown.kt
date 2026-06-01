@@ -14,25 +14,36 @@ import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.room.PrimaryKey
 import com.amirbatyrov.creamy.R
+import com.amirbatyrov.creamy.db.Area
+import com.amirbatyrov.creamy.db.Cream
+import com.amirbatyrov.creamy.db.CreamOrArea
 import com.amirbatyrov.creamy.ui.theme.setColors
+
 
 @Composable
 fun FormDropDown(
     value: MutableState<String>,
-    items: List<String>,
-    colors: List<Int>? = null,
-    modifier: Modifier = Modifier,
-    selected: MutableState<Boolean> = remember { mutableStateOf(false) },
+    items: List<CreamOrArea>,
     onClick: () -> Unit
 ) {
+    for (item in items) {
+        when (item) {
+            is Cream -> println(item.name)
+            is Area -> println(item.name)
+        }
+    }
+    val selected = remember { mutableStateOf(false) }
     SplitButtonLayout(
         leadingButton = {
             val expanded = remember { mutableStateOf(false) }
@@ -62,22 +73,37 @@ fun FormDropDown(
                             expanded.value = false
                         }
                     ) {
-                        for (i in 0 until items.size) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        items[i],
-                                        color = if (colors != null) Color.White else MaterialTheme.colorScheme.onBackground
+                        for (item in items) {
+                            when (item) {
+                                is Cream ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                item.name,
+                                                color = Color.White
+                                            )
+                                        },
+                                        onClick = {
+                                            value.value = item.name
+                                            selected.value = true
+                                        },
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(color = setColors[item.color])
                                     )
-                                },
-                                onClick = {
-                                    value.value = items[i]
-                                    selected.value = true
-                                },
-                                modifier = if (colors != null) Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(color = setColors[colors[i]]) else Modifier
-                            )
+                                is Area -> DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            item.name,
+                                            color = MaterialTheme.colorScheme.onBackground
+                                        )
+                                    },
+                                    onClick = {
+                                        value.value = item.name
+                                        selected.value = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }

@@ -48,7 +48,6 @@ fun AddRecordDialog(
 
             dbAccess.load()
             val creams by dbAccess.creamState.collectAsState()
-            val colors by dbAccess.colorState.collectAsState()
             val areas by dbAccess.areaState.collectAsState()
 
             Column(
@@ -70,18 +69,24 @@ fun AddRecordDialog(
                 FormDropDown(
                     cream,
                     creams,
-                    colors,
                     onClick = { creamDialog.value = true })
                 FormDropDown(area, areas, onClick = { areaDialog.value = true })
                 Button(
                     onClick = {
-                        dbAccess.insertRecord(
-                            record(
-                                cream.value,
-                                area.value,
-                                LocalDate.now()
+                        val cid = creams.find { it.name == cream.value }
+                        val aid = areas.find { it.name == area.value }
+
+                        if (cid != null && aid != null) {
+                            println(cid.cid)
+                            println(aid.aid)
+                            dbAccess.insertRecord(
+                                record(
+                                    cid.cid,
+                                    aid.aid,
+                                    LocalDate.now()
+                                )
                             )
-                        )
+                        }
                         openDialog.value = false
                     },
                     modifier = Modifier.padding(10.dp)
@@ -91,8 +96,7 @@ fun AddRecordDialog(
                     creamDialog,
                     "Cream",
                     creams,
-                    dbAccess,
-                    colors
+                    dbAccess
 
                 )
                 SelectionEditMenu(
