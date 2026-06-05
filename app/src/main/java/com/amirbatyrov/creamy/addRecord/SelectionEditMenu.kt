@@ -39,7 +39,7 @@ import com.amirbatyrov.creamy.R
 import com.amirbatyrov.creamy.db.Area
 import com.amirbatyrov.creamy.db.Cream
 import com.amirbatyrov.creamy.db.CreamOrArea
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.ui.theme.setColors
 
 
@@ -48,7 +48,7 @@ fun SelectionEditMenu(
     openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
     title: String,
     items: List<CreamOrArea>,
-    dbAccess: dbAccessModel
+    dbAccess: DBAccessModel
 ) {
     if (openDialog.value) {
         dbAccess.load()

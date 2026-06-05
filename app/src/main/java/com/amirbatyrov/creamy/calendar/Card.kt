@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.amirbatyrov.creamy.db.CreamColor
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.ui.theme.setColors
 import java.time.LocalDate
 
@@ -33,7 +33,7 @@ fun Card(
     records: List<CreamColor>,
     filter: MutableState<String>,
     modifier: Modifier,
-    dbAccess: dbAccessModel
+    dbAccess: DBAccessModel
 ) {
     val deleteDialog = remember { mutableStateOf(false) }
     val cream = remember { mutableStateOf("") }

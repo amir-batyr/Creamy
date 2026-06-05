@@ -16,13 +16,13 @@ import androidx.compose.ui.Modifier
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
 import java.time.Month
 
 @Composable
 fun Calendar(
     innerPadding: PaddingValues,
-    dbAccess: dbAccessModel
+    dbAccess: DBAccessModel
 ) {
     Column(
         modifier = Modifier
@@ -70,7 +70,7 @@ fun Calendar(
         val records = dbAccess.recordState.collectAsState()
         dbAccess.getRecordsBetween(start, end)
 
-        if (records.value.isNotEmpty()) {
+        if (records.value.records.isNotEmpty()) {
             for (row in 0 until 6) {
                 Row(
                     modifier = Modifier
@@ -83,7 +83,7 @@ fun Calendar(
                             // Add the current month's dates
                             Card(
                                 selectedMonth.withDayOfMonth((i - firstDay) + 1),
-                                records.value,
+                                records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
                                 dbAccess
@@ -93,7 +93,7 @@ fun Calendar(
                             Card(
                                 selectedMonth.plusMonths(1)
                                     .withDayOfMonth(i - (selectedMonth.lengthOfMonth() + firstDay) + 1),
-                                records.value,
+                                records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
                                 dbAccess
@@ -104,7 +104,7 @@ fun Calendar(
                                 previousMonth.withDayOfMonth(
                                     (previousMonth.lengthOfMonth() - firstDay) + i + 1
                                 ),
-                                records.value,
+                                records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
                                 dbAccess

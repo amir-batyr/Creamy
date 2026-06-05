@@ -6,9 +6,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,7 +26,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
+import com.amirbatyrov.creamy.db.OperationResult
 import com.amirbatyrov.creamy.db.record
 import java.time.LocalDate
 
@@ -28,13 +35,20 @@ import java.time.LocalDate
 @Composable
 fun AddRecordDialog(
     openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
-    dbAccess: dbAccessModel
+    dbAccess: DBAccessModel
 ) {
+    LaunchedEffect(openDialog.value) {
+        if (!openDialog.value) {
+            dbAccess.resetInsertResult()
+        } else {
+            dbAccess.load()
+        }
+    }
+
     if (openDialog.value) {
 
-        Dialog(onDismissRequest = { openDialog.value = true }) {
+        Dialog(onDismissRequest = { openDialog.value = false }) {
 
-            dbAccess.load()
             val creams by dbAccess.creamState.collectAsState()
             val areas by dbAccess.areaState.collectAsState()
 
@@ -49,33 +63,49 @@ fun AddRecordDialog(
 
                 val cream = remember { mutableStateOf("Cream") }
                 val area = remember { mutableStateOf("Area") }
+                val date = remember { mutableStateOf(LocalDate.now()) }
                 val creamDialog = remember { mutableStateOf(false) }
                 val areaDialog = remember { mutableStateOf(false) }
+                val dateDialog = remember { mutableStateOf(false) }
+                val status by dbAccess.insertResult.collectAsState()
 
+                if (status == OperationResult.Success) {
+                    openDialog.value = false
+                }
                 Text("Add to Record", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
-                Text(LocalDate.now().toString())
+                Button(onClick = {dateDialog.value = true}) {
+                    Text(date.value.toString())
+                }
+
+                if (dateDialog.value) {
+                    DatePicker(
+                        onDateSelected = { newDate -> date.value = newDate },
+                        onDismiss = { dateDialog.value = false })
+                }
                 FormDropDown(
                     cream,
                     creams,
                     onClick = { creamDialog.value = true })
                 FormDropDown(area, areas, onClick = { areaDialog.value = true })
+
+                if (status == OperationResult.Error("Record already exists for this date.")) {
+                    Text("Record already exists for this date.", color = MaterialTheme.colorScheme.error)
+                }
+
                 Button(
                     onClick = {
                         val cid = creams.find { it.name == cream.value }
                         val aid = areas.find { it.name == area.value }
 
                         if (cid != null && aid != null) {
-                            println(cid.cid)
-                            println(aid.aid)
                             dbAccess.insertRecord(
                                 record(
                                     cid.cid,
                                     aid.aid,
-                                    LocalDate.now()
+                                    date.value
                                 )
                             )
                         }
-                        openDialog.value = false
                     },
                     modifier = Modifier.padding(10.dp)
                 ) { Text("Add") }

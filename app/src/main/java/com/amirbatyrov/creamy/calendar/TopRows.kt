@@ -12,7 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -22,7 +22,7 @@ fun TopRows(
     month: MutableState<String>,
     year: MutableState<String>,
     filter: MutableState<String>,
-    dbAccess: dbAccessModel
+    dbAccess: DBAccessModel
 ) {
     dbAccess.load()
     val areas by dbAccess.areaState.collectAsState()

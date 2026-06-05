@@ -19,7 +19,7 @@ import androidx.room.Room
 import com.amirbatyrov.creamy.addRecord.AddRecordDialog
 import com.amirbatyrov.creamy.calendar.Calendar
 import com.amirbatyrov.creamy.db.CreamyDB
-import com.amirbatyrov.creamy.db.dbAccessModel
+import com.amirbatyrov.creamy.db.DBAccessModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,12 +32,7 @@ class MainActivity : ComponentActivity() {
                     CreamyDB::class.java, "Creamy"
                 ).build()
 
-                val dbAccess = dbAccessModel(db)
-                dbAccess.load()
-                val creams by dbAccess.creamState.collectAsState()
-                val areas by dbAccess.areaState.collectAsState()
-
-                val records by dbAccess.recordState.collectAsState()
+                val dbAccess = DBAccessModel(db)
 
                 val openAddRecord = remember { mutableStateOf(false) }
                 Scaffold(
@@ -47,7 +42,6 @@ class MainActivity : ComponentActivity() {
                         FloatingActionButton(onClick = {
                             openAddRecord.value = true
                             dbAccess.load()
-                            if (records.size > 0) { println(records[0].date.toString()) }
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.add),
