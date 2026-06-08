@@ -15,7 +15,7 @@ interface CreamDao {
     suspend fun getAll(): List<Cream>
 
     @Insert
-    fun insertAll(vararg cream: Cream)
+    fun insertAll(cream: Cream): Long
 
     @Update
     fun update(vararg cream: Cream)
@@ -29,7 +29,7 @@ interface AreaDao {
     @Query("SELECT * FROM Area")
     suspend fun getAll(): List<Area>
     @Insert
-    fun insertAll(vararg area: Area)
+    fun insertAll(area: Area): Long
 
     @Update
     fun update(vararg area: Area)
@@ -41,8 +41,13 @@ interface AreaDao {
 @Dao
 interface recordDao {
     @Insert
-    fun insertAll(vararg record: record)
+    fun insert(vararg record: record)
 
+    @Insert
+    fun insertAll(record: List<record>)
+
+    @Query("DELETE FROM record")
+    fun deleteAll()
     @Delete
     fun delete(vararg record: record)
 

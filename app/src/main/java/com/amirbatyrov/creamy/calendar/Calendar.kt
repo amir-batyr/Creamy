@@ -1,5 +1,8 @@
 package com.amirbatyrov.creamy.calendar
 
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,10 +22,12 @@ import java.util.Locale
 import com.amirbatyrov.creamy.db.DBAccessModel
 import java.time.Month
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun Calendar(
     innerPadding: PaddingValues,
-    dbAccess: DBAccessModel
+    dbAccess: DBAccessModel,
+    context: Context
 ) {
     Column(
         modifier = Modifier
@@ -41,7 +46,7 @@ fun Calendar(
         val year = remember { mutableStateOf(currentDate.year.toString()) }
         val filter = remember { mutableStateOf("All") }
 
-        TopRows(month, year, filter, dbAccess)
+        TopRows(month, year, filter, dbAccess,context)
 
         val selectedMonth =
             LocalDate.of(
@@ -86,8 +91,8 @@ fun Calendar(
                                 records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                dbAccess
-                            )
+                                dbAccess,
+                                MaterialTheme.colorScheme.onBackground                            )
                         } else if (i >= selectedMonth.lengthOfMonth() + firstDay) {
                             // Add the next month's dates
                             Card(
@@ -96,7 +101,8 @@ fun Calendar(
                                 records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                dbAccess
+                                dbAccess,
+                                MaterialTheme.colorScheme.secondary
                             )
                         } else {
                             // Add the previous month's dates
@@ -107,7 +113,8 @@ fun Calendar(
                                 records.value.records,
                                 filter,
                                 modifier = Modifier.weight(1f),
-                                dbAccess
+                                dbAccess,
+                                MaterialTheme.colorScheme.secondary
                             )
 
                         }

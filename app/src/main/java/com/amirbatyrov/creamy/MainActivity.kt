@@ -55,7 +55,8 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Calendar(
                         innerPadding,
-                        dbAccess
+                        dbAccess,
+                        this
                     )
                     AddRecordDialog(openAddRecord, dbAccess)
                 }

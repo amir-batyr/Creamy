@@ -33,7 +33,8 @@ fun Card(
     records: List<CreamColor>,
     filter: MutableState<String>,
     modifier: Modifier,
-    dbAccess: DBAccessModel
+    dbAccess: DBAccessModel,
+    textColor: Color
 ) {
     val deleteDialog = remember { mutableStateOf(false) }
     val cream = remember { mutableStateOf("") }
@@ -46,12 +47,12 @@ fun Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center
             )
 
         } else {
-            Text("${date.dayOfMonth}")
+            Text("${date.dayOfMonth}", color = textColor)
         }
         val matchingResuts =
             records.filter { it.date == date && (filter.value == "All" || it.area == filter.value) }
