@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 data class CalendarRecords(
-    val records: List<CreamColor>,
+    var records: List<CreamColor>,
     val start: LocalDate,
     val end: LocalDate
 )
@@ -31,13 +31,14 @@ sealed interface OperationResult {
 class DBAccessModel(private val db: CreamyDB) : ViewModel() {
     private val _creamState = MutableStateFlow<List<Cream>>(emptyList())
     val creamState = _creamState.asStateFlow()
+
     private val _areaState = MutableStateFlow<List<Area>>(emptyList())
     val areaState = _areaState.asStateFlow()
 
     private val _allRecordsState = MutableStateFlow<List<CreamColor>>(emptyList())
     val allRecordsState = _allRecordsState.asStateFlow()
 
-    private val _recordState = MutableStateFlow<CalendarRecords>(
+    private val _recordState = MutableStateFlow(
         CalendarRecords(
             emptyList(),
             LocalDate.now(),
@@ -60,34 +61,6 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
-    fun insertCream(cream: Cream) {
-        viewModelScope.launch(Dispatchers.IO) {
-            db.CreamDao().insertAll(cream)
-            load()
-        }
-    }
-
-    fun insertArea(area: Area) {
-        viewModelScope.launch(Dispatchers.IO) {
-            db.AreaDao().insertAll(area)
-            load()
-        }
-    }
-
-    fun insertRecord(record: record) {
-        viewModelScope.launch(Dispatchers.IO) {
-
-            try {
-                db.recordDao().insert(record)
-                _insertResult.value = OperationResult.Success
-                getRecordsBetween()
-            } catch (e: Exception) {
-                _insertResult.value = OperationResult.Error("Record already exists for this date.")
-            }
-
-        }
-    }
-
     fun getRecordsBetween(
         start: LocalDate = _recordState.value.start,
         end: LocalDate = _recordState.value.end
@@ -101,23 +74,66 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
-    fun deleteCream(cream: Cream) {
+    fun insert(item: CreamOrAreaOrRecord) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (db.recordDao().getAllWithCream(cream.cid).isEmpty()) {
-                db.CreamDao().delete(cream)
-                load()
-            }
+            when (item) {
+                is Cream -> {
+                    db.CreamDao().insertAll(item)
+                    _creamState.value += item
+                }
 
+                is Area -> {
+                    db.AreaDao().insertAll(item)
+                    _areaState.value += item
+                }
+
+                is record -> {
+                    try {
+                        db.recordDao().insert(item)
+                        _insertResult.value = OperationResult.Success
+                        if (item.date >= _recordState.value.start && item.date <= _recordState.value.end) {
+                            _recordState.value = CalendarRecords(
+                                _recordState.value.records + CreamColor(
+                                    _creamState.value.find { it.cid == item.cid }?.name ?: "null",
+                                    _areaState.value.find { it.aid == item.aid }?.name ?: "null",
+                                    item.date,
+                                    _creamState.value.find { it.cid == item.cid }?.color ?: 0,
+                                ),
+                                _recordState.value.start,
+                                _recordState.value.end
+                            )
+                        } else {
+                            println("No loading!")
+                        }
+                    } catch (e: Exception) {
+                        _insertResult.value =
+                            OperationResult.Error("Record already exists for this date.")
+                    }
+                }
+            }
         }
     }
 
-    fun deleteArea(area: Area) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (db.recordDao().getAllWithArea(area.aid).isEmpty()) {
-                db.AreaDao().delete(area)
-                load()
-            }
 
+    fun delete(
+        item: CreamOrArea
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (item) {
+                is Cream -> {
+                    if (db.recordDao().getAllWithCream(item.cid).isEmpty()) {
+                        db.CreamDao().delete(item)
+                        _creamState.value = _creamState.value.dropWhile { it.cid == item.cid }
+                    }
+                }
+
+                is Area -> {
+                    if (db.recordDao().getAllWithArea(item.aid).isEmpty()) {
+                        db.AreaDao().delete(item)
+                        _areaState.value = _areaState.value.dropWhile { it.aid == item.aid }
+                    }
+                }
+            }
         }
     }
 
@@ -132,17 +148,24 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
-    fun update(cream: Cream) {
-        viewModelScope.launch(Dispatchers.IO) {
-            db.CreamDao().update(cream)
-            load()
-        }
-    }
 
-    fun update(area: Area) {
+    fun update(item: CreamOrArea) {
         viewModelScope.launch(Dispatchers.IO) {
-            db.AreaDao().update(area)
-            load()
+            when (item) {
+                is Cream -> {
+                    db.CreamDao().update(item)
+                    _creamState.value =
+                        _creamState.value.dropWhile { it.cid == item.cid } + item
+                    getRecordsBetween()
+                }
+
+                is Area -> {
+                    db.AreaDao().update(item)
+                    _areaState.value =
+                        _areaState.value.dropWhile { it.aid == item.aid } + item
+                    getRecordsBetween()
+                }
+            }
         }
     }
 
@@ -164,9 +187,9 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
                 MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                 values
             )
-            val data = db.recordDao().getAll().map { it ->
+            val data = db.recordDao().getAll().joinToString("\n") {
                 "${it.date},${it.cream},${it.area}"
-            }.joinToString("\n").toByteArray()
+            }.toByteArray()
 
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->

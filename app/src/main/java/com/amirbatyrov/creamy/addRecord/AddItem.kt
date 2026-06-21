@@ -107,52 +107,56 @@ fun AddMenu(
                     isError = error.value.isNotEmpty()
                 )
 
-                Row() {
+                Row {
                     Button(
                         onClick = {
                             // Validation
                             error.value = ""
                             val name = newValue.text.toString()
-                            val names = items.map { it -> it.name }
-                            if (name == "") {
-                                error.value = "Can't Be Empty"
-                            } else if ( name in names && name != items.getOrNull(pos.value)?.name) {
-                                error.value = "Already Exists"
-                            } else {
-                                if (pos.value != -1) {
-                                    // EDIT
-                                    val item = items[pos.value]
-                                    when (item) {
-                                        is Cream -> dbAccess.update(
-                                            Cream(
-                                                item.cid,
-                                                newValue.text.toString(),
-                                                color.intValue,
-                                            )
-                                        )
-
-                                        is Area -> dbAccess.update(
-                                            Area(
-                                                item.aid, newValue.text.toString()
-                                            )
-                                        )
-                                    }
-                                    pos.value = -1
-                                } else {
-                                    // WRITE
-
-                                    if (title == "Cream") {
-                                        dbAccess.insertCream(
-                                            Cream(newValue.text.toString(), color.intValue)
-                                        )
-
-                                    } else {
-                                        dbAccess.insertArea(
-                                            Area(newValue.text.toString())
-                                        )
-                                    }
+                            val names = items.map {it.name}
+                            when (name) {
+                                "" -> {
+                                    error.value = "Can't Be Empty"
                                 }
-                                openDialog.value = false
+                                in names if name != items.getOrNull(pos.value)?.name -> {
+                                    error.value = "Already Exists"
+                                }
+                                else -> {
+                                    if (pos.value != -1) {
+                                        // EDIT
+
+                                        when (val item = items[pos.value]) {
+                                            is Cream -> dbAccess.update(
+                                                Cream(
+                                                    item.cid,
+                                                    newValue.text.toString(),
+                                                    color.intValue,
+                                                )
+                                            )
+
+                                            is Area -> dbAccess.update(
+                                                Area(
+                                                    item.aid, newValue.text.toString()
+                                                )
+                                            )
+                                        }
+                                        pos.value = -1
+                                    } else {
+                                        // WRITE
+
+                                        if (title == "Cream") {
+                                            dbAccess.insert(
+                                                Cream(newValue.text.toString(), color.intValue)
+                                            )
+
+                                        } else {
+                                            dbAccess.insert(
+                                                Area(newValue.text.toString())
+                                            )
+                                        }
+                                    }
+                                    openDialog.value = false
+                                }
                             }
                         },
                     ) { Text("Add") }

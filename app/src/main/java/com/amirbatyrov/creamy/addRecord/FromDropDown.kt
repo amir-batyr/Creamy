@@ -14,16 +14,13 @@ import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.room.PrimaryKey
 import com.amirbatyrov.creamy.R
 import com.amirbatyrov.creamy.db.Area
 import com.amirbatyrov.creamy.db.Cream
@@ -65,7 +62,7 @@ fun FormDropDown(
                 ),
                 border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary)
             ) {
-                Box() {
+                Box {
                     Text(value.value)
                     DropdownMenu(
                         expanded = expanded.value,
@@ -91,6 +88,7 @@ fun FormDropDown(
                                             .clip(RoundedCornerShape(10.dp))
                                             .background(color = setColors[item.color])
                                     )
+
                                 is Area -> DropdownMenuItem(
                                     text = {
                                         Text(

@@ -20,15 +20,19 @@ class Converters {
         return date?.format(formatter)
     }
 }
+
 sealed interface CreamOrArea {
     val name: String
 }
+
+sealed interface CreamOrAreaOrRecord
+
 @Entity
 data class Cream(
     @PrimaryKey(autoGenerate = true) val cid: Long,
     override val name: String,
     val color: Int,
-)  : CreamOrArea {
+)  : CreamOrArea, CreamOrAreaOrRecord {
     constructor(name: String, color: Int) : this (cid = 0, name = name, color = color)
 }
 
@@ -37,7 +41,7 @@ data class Area(
     @PrimaryKey(autoGenerate = true)
     val aid: Long,
     override val name: String
-) : CreamOrArea {
+) : CreamOrArea, CreamOrAreaOrRecord {
     constructor(name: String) : this (aid = 0, name = name)
 }
 
@@ -50,4 +54,4 @@ data class Area(
     val cid: Long,
     val aid: Long,
     val date: LocalDate
-)
+) : CreamOrAreaOrRecord

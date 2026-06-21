@@ -39,7 +39,7 @@ interface AreaDao {
 }
 
 @Dao
-interface recordDao {
+interface RecordDao {
     @Insert
     fun insert(vararg record: record)
 

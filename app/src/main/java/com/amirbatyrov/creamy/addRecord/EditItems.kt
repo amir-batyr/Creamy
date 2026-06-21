@@ -1,20 +1,13 @@
 package com.amirbatyrov.creamy.addRecord
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -26,14 +19,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SplitButtonDefaults
 import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.amirbatyrov.creamy.R
 import com.amirbatyrov.creamy.db.Area
@@ -70,7 +60,7 @@ fun SelectionEditMenu(
                 val add = remember { mutableStateOf(false) }
 
                 if (items.isNotEmpty()) {
-                    LazyColumn() {
+                    LazyColumn {
 
                         items(items.size) { index ->
                             val item = items[index]
@@ -98,8 +88,8 @@ fun SelectionEditMenu(
                                     SplitButtonDefaults.TrailingButton(
                                         onClick = {
                                             when (item) {
-                                               is Cream -> dbAccess.deleteCream(item)
-                                               is Area -> dbAccess.deleteArea(item)
+                                               is Cream -> dbAccess.delete(item)
+                                               is Area -> dbAccess.delete(item)
                                             }
                                         },
                                         colors =

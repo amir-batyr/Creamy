@@ -6,13 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -98,7 +93,7 @@ fun AddRecordDialog(
                         val aid = areas.find { it.name == area.value }
 
                         if (cid != null && aid != null) {
-                            dbAccess.insertRecord(
+                            dbAccess.insert(
                                 record(
                                     cid.cid,
                                     aid.aid,
