@@ -27,6 +27,7 @@ fun DeleteDialog(
     cream: String,
     area: String,
     date: LocalDate,
+    color: Int,
     dbAccess: DBAccessModel
 ) {
     if (openDialog.value) {
@@ -45,7 +46,7 @@ fun DeleteDialog(
                 TextButton(
                     onClick = {
                         openDialog.value = false
-                        dbAccess.deleteRecord(cream, area, date)
+                        dbAccess.deleteRecord(cream, area, date, color)
                     }
                 ) {
                     Text("Delete")

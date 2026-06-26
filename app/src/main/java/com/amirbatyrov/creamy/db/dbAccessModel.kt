@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -34,9 +35,6 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
 
     private val _areaState = MutableStateFlow<List<Area>>(emptyList())
     val areaState = _areaState.asStateFlow()
-
-    private val _allRecordsState = MutableStateFlow<List<CreamColor>>(emptyList())
-    val allRecordsState = _allRecordsState.asStateFlow()
 
     private val _recordState = MutableStateFlow(
         CalendarRecords(
@@ -92,16 +90,18 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
                         db.recordDao().insert(item)
                         _insertResult.value = OperationResult.Success
                         if (item.date >= _recordState.value.start && item.date <= _recordState.value.end) {
-                            _recordState.value = CalendarRecords(
-                                _recordState.value.records + CreamColor(
-                                    _creamState.value.find { it.cid == item.cid }?.name ?: "null",
-                                    _areaState.value.find { it.aid == item.aid }?.name ?: "null",
-                                    item.date,
-                                    _creamState.value.find { it.cid == item.cid }?.color ?: 0,
-                                ),
-                                _recordState.value.start,
-                                _recordState.value.end
-                            )
+                            _recordState.update { it ->
+                                it.copy(
+                                    records = _recordState.value.records + CreamColor(
+                                        _creamState.value.find { it.cid == item.cid }?.name
+                                            ?: "null",
+                                        _areaState.value.find { it.aid == item.aid }?.name
+                                            ?: "null",
+                                        item.date,
+                                        _creamState.value.find { it.cid == item.cid }?.color ?: 0,
+                                    )
+                                )
+                            }
                         } else {
                             println("No loading!")
                         }
@@ -137,14 +137,23 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
-    fun deleteRecord(cream: String, area: String, date: LocalDate) {
+    fun deleteRecord(cream: String, area: String, date: LocalDate, color: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val cid = _creamState.value.find { it.name == cream }
             val aid = _areaState.value.find { it.name == area }
             if (cid != null && aid != null) {
                 db.recordDao().delete(record(cid.cid, aid.aid, date))
+                _recordState.update {
+                    it.copy(records = _recordState.value.records.dropWhile {
+                        it == CreamColor(
+                            cream,
+                            area,
+                            date,
+                            color
+                        )
+                    })
+                }
             }
-            getRecordsBetween()
         }
     }
 

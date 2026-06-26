@@ -31,6 +31,7 @@ fun Card(
     val deleteDialog = remember { mutableStateOf(false) }
     val cream = remember { mutableStateOf("") }
     val area = remember { mutableStateOf("") }
+    val color = remember { mutableStateOf(0) }
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         if (LocalDate.now() == date) {
 
@@ -53,9 +54,12 @@ fun Card(
                 it.cream[0] + " - " + it.area,
                 modifier = Modifier
                     .combinedClickable(
-                        onLongClick = { cream.value = it.cream
-                                      area.value = it.area
-                                      deleteDialog.value = true},
+                        onLongClick = {
+                            cream.value = it.cream
+                            area.value = it.area
+                            color.value = it.color
+                            deleteDialog.value = true
+                        },
                         onClick = {}
                     )
                     .background(setColors[it.color])
@@ -66,5 +70,5 @@ fun Card(
 
         }
     }
-    DeleteDialog(deleteDialog, cream.value, area.value, date, dbAccess)
+    DeleteDialog(deleteDialog, cream.value, area.value, date, color.value, dbAccess)
 }

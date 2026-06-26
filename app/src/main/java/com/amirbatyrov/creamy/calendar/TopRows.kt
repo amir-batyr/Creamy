@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -36,6 +38,7 @@ fun TopRows(
     dbAccess.load()
     val areas by dbAccess.areaState.collectAsState()
 
+    val importDialog = remember { mutableStateOf(false) }
     // Top Bar Row
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -71,7 +74,7 @@ fun TopRows(
             border = ButtonDefaults.outlinedButtonBorder(true),
             modifier = Modifier.padding(0.dp, 4.dp)
         ) {
-            Icon(painter = painterResource(R.drawable.download), "Download")
+            Icon(painter = painterResource(R.drawable.download), "Download", tint = ButtonDefaults.outlinedButtonColors().contentColor)
         }
 
         val csvPicker =
@@ -84,16 +87,24 @@ fun TopRows(
 
         OutlinedIconButton(
             onClick = {
+                importDialog.value = true
+            },
+            border = ButtonDefaults.outlinedButtonBorder(true),
+            modifier = Modifier.padding(0.dp, 4.dp)
+        ) {
+            Icon(painter = painterResource(R.drawable.upload), "Import", tint = ButtonDefaults.outlinedButtonColors().contentColor)
+        }
+
+        if (importDialog.value) {
+            ConfirmImport(importDialog) {
+                dbAccess.writeAll(context)
                 csvPicker.launch(
                     arrayOf(
                         "text/csv", "text/comma-separated-values", "*/*"
                     )
                 )
-            },
-            border = ButtonDefaults.outlinedButtonBorder(true),
-            modifier = Modifier.padding(0.dp, 4.dp)
-        ) {
-            Icon(painter = painterResource(R.drawable.upload), "Import")
+                importDialog.value = false
+            }
         }
     }
 
