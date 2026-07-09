@@ -8,14 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import com.amirbatyrov.creamy.db.CreamColor
-import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.ui.theme.setColors
 import java.time.LocalDate
 
@@ -23,15 +20,11 @@ import java.time.LocalDate
 fun Card(
     date: LocalDate,
     records: List<CreamColor>,
-    filter: MutableState<String>,
     modifier: Modifier,
-    dbAccess: DBAccessModel,
-    textColor: Color
+    textColor: Color,
+    selectedRecord: MutableState<CreamColor>,
+    deleteDialog: MutableState<Boolean>
 ) {
-    val deleteDialog = remember { mutableStateOf(false) }
-    val cream = remember { mutableStateOf("") }
-    val area = remember { mutableStateOf("") }
-    val color = remember { mutableStateOf(0) }
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         if (LocalDate.now() == date) {
 
@@ -47,17 +40,13 @@ fun Card(
         } else {
             Text("${date.dayOfMonth}", color = textColor)
         }
-        val matchingResuts =
-            records.filter { it.date == date && (filter.value == "All" || it.area == filter.value) }
-        matchingResuts.forEach {
+        records.filter { it.date == date }.forEach {
             Text(
                 it.cream[0] + " - " + it.area,
                 modifier = Modifier
                     .combinedClickable(
                         onLongClick = {
-                            cream.value = it.cream
-                            area.value = it.area
-                            color.value = it.color
+                            selectedRecord.value = it
                             deleteDialog.value = true
                         },
                         onClick = {}
@@ -70,5 +59,4 @@ fun Card(
 
         }
     }
-    DeleteDialog(deleteDialog, cream.value, area.value, date, color.value, dbAccess)
 }

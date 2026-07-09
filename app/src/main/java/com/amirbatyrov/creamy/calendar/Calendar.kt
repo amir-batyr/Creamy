@@ -7,18 +7,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.amirbatyrov.creamy.db.CreamColor
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 import com.amirbatyrov.creamy.db.DBAccessModel
+import com.amirbatyrov.creamy.db.RecordFilter
 import java.time.Month
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -47,6 +50,16 @@ fun Calendar(
 
         TopRows(month, year, filter, dbAccess, context)
 
+        val deleteDialog = remember { mutableStateOf(false) }
+        val selectedRecord: MutableState<CreamColor> = remember {
+            mutableStateOf(
+                CreamColor(
+                    "cream", "area",
+                    LocalDate.now(), 0
+                )
+            )
+        }
+
         val selectedMonth =
             LocalDate.of(
                 year.value.toInt(),
@@ -55,72 +68,46 @@ fun Calendar(
             )
 
         var firstDay = selectedMonth.dayOfWeek.value
+        if (firstDay == 7) firstDay = 0
 
         val previousMonth = selectedMonth.minusMonths(1)
-        var start = previousMonth.withDayOfMonth(
-            (previousMonth.lengthOfMonth() - firstDay) + 1
-        )
-
-        if (selectedMonth.dayOfWeek.value == 7) {
-            // If month starts on a Sunday
-            firstDay = 0
-            // Exclude the month before
-            start = selectedMonth.withDayOfMonth(1)
-        }
-        val end = selectedMonth.plusMonths(1)
-            .withDayOfMonth(42 - (selectedMonth.lengthOfMonth() + firstDay))
-
-        // Fetch all required records
-        val records = dbAccess.recordState.collectAsState()
-        dbAccess.getRecordsBetween(start, end)
-
-
-        for (row in 0 until 6) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                for (column in 0 until 7) {
-                    val i = (row * 7) + column
-                    if (i >= firstDay && i < selectedMonth.lengthOfMonth() + firstDay) {
-                        // Add the current month's dates
-                        Card(
-                            selectedMonth.withDayOfMonth((i - firstDay) + 1),
-                            records.value.records,
-                            filter,
-                            modifier = Modifier.weight(1f),
-                            dbAccess,
-                            MaterialTheme.colorScheme.onBackground
-                        )
-                    } else if (i >= selectedMonth.lengthOfMonth() + firstDay) {
-                        // Add the next month's dates
-                        Card(
-                            selectedMonth.plusMonths(1)
-                                .withDayOfMonth(i - (selectedMonth.lengthOfMonth() + firstDay) + 1),
-                            records.value.records,
-                            filter,
-                            modifier = Modifier.weight(1f),
-                            dbAccess,
-                            MaterialTheme.colorScheme.secondary
-                        )
-                    } else {
-                        // Add the previous month's dates
-                        Card(
-                            previousMonth.withDayOfMonth(
-                                (previousMonth.lengthOfMonth() - firstDay) + i + 1
-                            ),
-                            records.value.records,
-                            filter,
-                            modifier = Modifier.weight(1f),
-                            dbAccess,
-                            MaterialTheme.colorScheme.secondary
-                        )
-
-                    }
-                }
+        val nextMonth = selectedMonth.plusMonths(1)
+        val dates = arrayOfNulls<LocalDate>(42)
+        for (i in 0 until 42) {
+            if (i < firstDay) {
+                dates[i] =
+                    previousMonth.withDayOfMonth(previousMonth.lengthOfMonth() - (firstDay - (i + 1)))
+            } else if (i < firstDay + selectedMonth.lengthOfMonth()) {
+                dates[i] = selectedMonth.withDayOfMonth((i + 1) - firstDay)
+            } else {
+                dates[i] =
+                    nextMonth.withDayOfMonth((i - (firstDay + selectedMonth.lengthOfMonth())) + 1)
             }
         }
+        val rawRecords = dbAccess.recordState.collectAsState()
+        dbAccess.getRecordsBetween(RecordFilter(dates.first()!!, dates.last()!!, filter.value))
+        LaunchedEffect(filter) {
+            dbAccess.getRecordsBetween(RecordFilter(dates.first()!!, dates.last()!!, filter.value))
+        }
+        for (row in 0 until 6) {
+            Row(modifier = Modifier.weight(1f)) {
+                for (colum in 0 until 7) {
+                    val i = (row * 7) + colum
 
+                    Card(
+                        dates[i]!!,
+                        rawRecords.value.filter { it.date == dates[i] },
+                        Modifier.weight(1f),
+                        MaterialTheme.colorScheme.secondary,
+                        selectedRecord,
+                        deleteDialog
+                    )
+                }
+
+
+            }
+
+        }
+        DeleteDialog(deleteDialog, selectedRecord.value, dbAccess)
     }
 }

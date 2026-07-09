@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.db.OperationResult
 import com.amirbatyrov.creamy.db.record
@@ -35,8 +36,6 @@ fun AddRecordDialog(
     LaunchedEffect(openDialog.value) {
         if (!openDialog.value) {
             dbAccess.resetInsertResult()
-        } else {
-            dbAccess.load()
         }
     }
 
@@ -44,8 +43,8 @@ fun AddRecordDialog(
 
         Dialog(onDismissRequest = { openDialog.value = false }) {
 
-            val creams by dbAccess.creamState.collectAsState()
-            val areas by dbAccess.areaState.collectAsState()
+            val creams by dbAccess.creamState.collectAsStateWithLifecycle()
+            val areas by dbAccess.areaState.collectAsStateWithLifecycle()
 
             Column(
                 modifier = Modifier

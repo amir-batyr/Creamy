@@ -35,7 +35,6 @@ fun TopRows(
     dbAccess: DBAccessModel,
     context: Context
 ) {
-    dbAccess.load()
     val areas by dbAccess.areaState.collectAsState()
 
     val importDialog = remember { mutableStateOf(false) }

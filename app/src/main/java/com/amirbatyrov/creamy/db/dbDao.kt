@@ -5,14 +5,13 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
-
-data class CreamColor(val cream: String, val area: String, val date: LocalDate, val color: Int)
 
 @Dao
 interface CreamDao {
     @Query("SELECT * FROM Cream")
-    suspend fun getAll(): List<Cream>
+    fun getAll(): Flow<List<Cream>>
 
     @Insert
     fun insertAll(cream: Cream): Long
@@ -27,7 +26,7 @@ interface CreamDao {
 @Dao
 interface AreaDao {
     @Query("SELECT * FROM Area")
-    suspend fun getAll(): List<Area>
+    fun getAll(): Flow<List<Area>>
     @Insert
     fun insertAll(area: Area): Long
 
@@ -48,14 +47,15 @@ interface RecordDao {
 
     @Query("DELETE FROM record")
     fun deleteAll()
-    @Delete
-    fun delete(vararg record: record)
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE record.date BETWEEN :start AND :end AND Cream.cid = record.cid AND Area.aid = record.aid")
-    fun getRecordsBetween(start: LocalDate, end: LocalDate): List<CreamColor>
+    @Query("DELETE FROM record WHERE cid IN (SELECT cid FROM Cream WHERE name = :cream) AND aid IN (SELECT aid FROM Area WHERE name = :area) AND date = :date")
+    fun delete(cream: String, area: String, date: LocalDate)
+
+    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE record.date BETWEEN :start AND :end AND Area.name LIKE :area AND Cream.cid = record.cid AND Area.aid = record.aid")
+    fun getRecordsBetween(start: LocalDate, end: LocalDate, area: String = "%"): Flow<List<CreamColor>>
 
     @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE Cream.cid = record.cid AND Area.aid = record.aid")
-    fun getAll(): List<CreamColor>
+    fun getAll(): Flow<List<CreamColor>>
 
     @Query("SELECT * FROM record WHERE cid = :cid")
     fun getAllWithCream(cid: Long): List<record>

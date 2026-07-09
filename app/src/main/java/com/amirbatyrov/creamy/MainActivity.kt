@@ -1,9 +1,11 @@
 package com.amirbatyrov.creamy
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import com.amirbatyrov.creamy.db.CreamyDB
 import com.amirbatyrov.creamy.db.DBAccessModel
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -41,7 +44,6 @@ class MainActivity : ComponentActivity() {
                         // Add record button
                         FloatingActionButton(onClick = {
                             openAddRecord.value = true
-                            dbAccess.load()
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.add),

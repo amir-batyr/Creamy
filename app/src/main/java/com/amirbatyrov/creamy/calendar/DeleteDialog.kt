@@ -17,36 +17,42 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.amirbatyrov.creamy.R
+import com.amirbatyrov.creamy.db.CreamColor
 import com.amirbatyrov.creamy.db.DBAccessModel
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteDialog(
     openDialog: MutableState<Boolean>,
-    cream: String,
-    area: String,
-    date: LocalDate,
-    color: Int,
+    record: CreamColor,
     dbAccess: DBAccessModel
 ) {
     if (openDialog.value) {
         AlertDialog(
             icon = {
-                Icon(painter = painterResource(R.drawable.delete), contentDescription = "Delete", modifier = Modifier.size(35.dp))
+                Icon(
+                    painter = painterResource(R.drawable.delete),
+                    contentDescription = "Delete",
+                    modifier = Modifier.size(35.dp)
+                )
             },
             title = {
                 Text("Delete this record?")
             },
             text = {
-                Text("$cream - $area", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), style = TextStyle(fontSize = 20.sp))
+                Text(
+                    "${record.cream} - ${record.area}",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(fontSize = 20.sp)
+                )
             },
-            onDismissRequest = {openDialog.value = true},
+            onDismissRequest = { openDialog.value = true },
             confirmButton = {
                 TextButton(
                     onClick = {
                         openDialog.value = false
-                        dbAccess.deleteRecord(cream, area, date, color)
+                        dbAccess.delete(record)
                     }
                 ) {
                     Text("Delete")

@@ -41,7 +41,6 @@ fun SelectionEditMenu(
     dbAccess: DBAccessModel
 ) {
     if (openDialog.value) {
-        dbAccess.load()
         Dialog(onDismissRequest = {
             openDialog.value = false
         }) {

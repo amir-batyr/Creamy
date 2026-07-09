@@ -27,12 +27,16 @@ sealed interface CreamOrArea {
 
 sealed interface CreamOrAreaOrRecord
 
+data class CreamColor(val cream: String, val area: String, val date: LocalDate, val color: Int): CreamOrAreaOrCreamColor
+
+sealed interface CreamOrAreaOrCreamColor
+
 @Entity
 data class Cream(
     @PrimaryKey(autoGenerate = true) val cid: Long,
     override val name: String,
     val color: Int,
-)  : CreamOrArea, CreamOrAreaOrRecord {
+)  : CreamOrArea, CreamOrAreaOrRecord, CreamOrAreaOrCreamColor {
     constructor(name: String, color: Int) : this (cid = 0, name = name, color = color)
 }
 
@@ -41,7 +45,7 @@ data class Area(
     @PrimaryKey(autoGenerate = true)
     val aid: Long,
     override val name: String
-) : CreamOrArea, CreamOrAreaOrRecord {
+) : CreamOrArea, CreamOrAreaOrRecord, CreamOrAreaOrCreamColor {
     constructor(name: String) : this (aid = 0, name = name)
 }
 

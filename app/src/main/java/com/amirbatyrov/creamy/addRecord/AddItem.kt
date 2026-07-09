@@ -49,7 +49,6 @@ fun AddMenu(
 
         Dialog(onDismissRequest = {
             openDialog.value = true
-            dbAccess.load()
         }) {
 
             Column(
