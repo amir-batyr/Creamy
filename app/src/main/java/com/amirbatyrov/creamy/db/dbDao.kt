@@ -14,7 +14,7 @@ interface CreamDao {
     fun getAll(): Flow<List<Cream>>
 
     @Insert
-    fun insertAll(cream: Cream): Long
+    fun insert(cream: Cream): Long
 
     @Update
     fun update(vararg cream: Cream)
@@ -28,7 +28,7 @@ interface AreaDao {
     @Query("SELECT * FROM Area")
     fun getAll(): Flow<List<Area>>
     @Insert
-    fun insertAll(area: Area): Long
+    fun insert(area: Area): Long
 
     @Update
     fun update(vararg area: Area)
@@ -54,8 +54,8 @@ interface RecordDao {
     @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE record.date BETWEEN :start AND :end AND Area.name LIKE :area AND Cream.cid = record.cid AND Area.aid = record.aid")
     fun getRecordsBetween(start: LocalDate, end: LocalDate, area: String = "%"): Flow<List<CreamColor>>
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE Cream.cid = record.cid AND Area.aid = record.aid")
-    fun getAll(): Flow<List<CreamColor>>
+    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE Cream.cid = record.cid AND Area.aid = record.aid LIMIT :limit OFFSET :offset")
+    fun getChunk(limit: Int, offset: Int): List<CreamColor>
 
     @Query("SELECT * FROM record WHERE cid = :cid")
     fun getAllWithCream(cid: Long): List<record>

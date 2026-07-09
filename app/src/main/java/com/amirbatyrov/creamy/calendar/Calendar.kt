@@ -3,11 +3,18 @@ package com.amirbatyrov.creamy.calendar
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,24 +96,30 @@ fun Calendar(
         LaunchedEffect(filter) {
             dbAccess.getRecordsBetween(RecordFilter(dates.first()!!, dates.last()!!, filter.value))
         }
-        for (row in 0 until 6) {
-            Row(modifier = Modifier.weight(1f)) {
-                for (colum in 0 until 7) {
-                    val i = (row * 7) + colum
+        val scrollState = rememberScrollState()
+        BoxWithConstraints(modifier = Modifier.weight(1f)) {
+            val minRowHeight = maxHeight / 6
+            Column(modifier = Modifier.verticalScroll(scrollState)) {
+                for (row in 0 until 6) {
+                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+                        for (colum in 0 until 7) {
+                            val i = (row * 7) + colum
 
-                    Card(
-                        dates[i]!!,
-                        rawRecords.value.filter { it.date == dates[i] },
-                        Modifier.weight(1f),
-                        MaterialTheme.colorScheme.secondary,
-                        selectedRecord,
-                        deleteDialog
-                    )
+                            Card(
+                                dates[i]!!,
+                                rawRecords.value.filter { it.date == dates[i] },
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .heightIn(min = minRowHeight),
+                                MaterialTheme.colorScheme.secondary,
+                                selectedRecord,
+                                deleteDialog
+                            )
+                        }
+                    }
                 }
-
-
             }
-
         }
         DeleteDialog(deleteDialog, selectedRecord.value, dbAccess)
     }

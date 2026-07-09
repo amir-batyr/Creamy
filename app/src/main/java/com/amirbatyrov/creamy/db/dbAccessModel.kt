@@ -18,6 +18,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.time.LocalDate
 
 sealed interface OperationResult {
@@ -72,8 +77,8 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
     fun insert(item: CreamOrAreaOrRecord) {
         viewModelScope.launch(Dispatchers.IO) {
             when (item) {
-                is Cream -> db.CreamDao().insertAll(item)
-                is Area -> db.AreaDao().insertAll(item)
+                is Cream -> db.CreamDao().insert(item)
+                is Area -> db.AreaDao().insert(item)
                 is record -> {
                     try {
                         db.recordDao().insert(item)
@@ -141,47 +146,88 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
             val uri = resolver.insert(
                 MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
             )
-            val data = db.recordDao().getAll().first().joinToString("\n") {
-                "${it.date},${it.cream},${it.area}"
-            }.toByteArray()
 
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write(data)
+                    BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
+                        writer.write("Cream, Area, Date\n")
+
+                        val chunkSize = 1000
+                        var offset = 0
+                        var hasMoreData = true
+
+                        while (hasMoreData) {
+                            val chunk = db.recordDao().getChunk(chunkSize, offset)
+                            if (chunk.isEmpty()) {
+                                hasMoreData = false
+                            } else {
+                                chunk.forEach {
+                                    writer.write("${it.cream},${it.area},${it.date}\n")
+                                }
+                                writer.flush() // Pushes chunk safely to disk
+                                offset += chunkSize
+                            }
+                        }
+
+                    }
                 }
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun import(uri: Uri, context: Context) {
+        writeAll(context)
         viewModelScope.launch(Dispatchers.IO) {
-            val dates = mutableListOf<LocalDate>()
-            val cids = mutableListOf<String>()
-            val aids = mutableListOf<String>()
-            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
-                reader.forEachLine { line ->
-                    val row = line.split(",")
-                    dates.add(LocalDate.parse(row[0]))
-                    cids.add(row[1])
-                    aids.add(row[2])
+            db.recordDao().deleteAll()
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream)).use {
+                    reader ->
+                    val header = reader.readLine() ?: return@launch
+
+                    val chunkSize = 1000
+                    val chunkBuffer = mutableListOf<record>()
+                    var line: String?
+
+                    while (reader.readLine().also { line = it } != null) {
+                        val record = parseCsvToRecord(line!!)
+                        if (record != null) {
+                            chunkBuffer.add(record)
+                        }
+
+                        if (chunkBuffer.size >= chunkSize) {
+                            db.recordDao().insertAll(chunkBuffer)
+                            chunkBuffer.clear()
+                        }
+                    }
+
+                    if (chunkBuffer.isNotEmpty()) {
+                        db.recordDao().insertAll(chunkBuffer)
+                        chunkBuffer.clear()
+                    }
                 }
             }
-            cids.replaceAll { name ->
-                val cid = creamState.value.find { cream -> cream.name == name }
-                cid?.cid?.toString() ?: db.CreamDao().insertAll(Cream(name, 0)).toString()
-            }
-            aids.replaceAll { name ->
-                val aid = areaState.value.find { area -> area.name == name }
-                aid?.aid?.toString() ?: db.AreaDao().insertAll(Area(name)).toString()
-            }
-            val records = dates.indices.map { index ->
-                record(
-                    cids[index].toLong(), aids[index].toLong(), dates[index]
-                )
-            }
-            db.recordDao().deleteAll()
-            db.recordDao().insertAll(records)
-            getRecordsBetween()
+        }
+    }
+
+    private fun parseCsvToRecord(line: String): record? {
+        val tokens = line.split(",")
+        if (tokens.size < 3) return null
+
+        return record(
+            nameToID(Cream(tokens[0], 0)),
+            nameToID(Area(tokens[1])),
+            LocalDate.parse(tokens[2])
+        )
+    }
+
+    private fun nameToID(item: CreamOrArea): Long {
+        return when (item) {
+            is Cream -> creamState.value.find { it.name == item.name }?.cid ?: db.CreamDao()
+                .insert(item)
+
+            is Area -> areaState.value.find { it.name == item.name }?.aid ?: db.AreaDao()
+                .insert(item)
         }
     }
 }

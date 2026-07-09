@@ -96,7 +96,6 @@ fun TopRows(
 
         if (importDialog.value) {
             ConfirmImport(importDialog) {
-                dbAccess.writeAll(context)
                 csvPicker.launch(
                     arrayOf(
                         "text/csv", "text/comma-separated-values", "*/*"
