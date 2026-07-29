@@ -113,11 +113,13 @@ fun AddMenu(
                             error.value = ""
                             val name = newValue.text.toString()
                             val names = items.map {it.name}
-                            when (name) {
-                                "" -> {
+
+                            when {
+                                name.contains(",") -> error.value = "Can't Contain ,"
+                                name == "" -> {
                                     error.value = "Can't Be Empty"
                                 }
-                                in names if name != items.getOrNull(pos.value)?.name -> {
+                                name in names && name != items.getOrNull(pos.value)?.name-> {
                                     error.value = "Already Exists"
                                 }
                                 else -> {

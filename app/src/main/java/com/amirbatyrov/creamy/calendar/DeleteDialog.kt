@@ -41,13 +41,13 @@ fun DeleteDialog(
             },
             text = {
                 Text(
-                    "${record.cream} - ${record.area}",
+                    "${record.cream} - ${record.area} - ${record.date}",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                     style = TextStyle(fontSize = 20.sp)
                 )
             },
-            onDismissRequest = { openDialog.value = true },
+            onDismissRequest = { openDialog.value = false },
             confirmButton = {
                 TextButton(
                     onClick = {

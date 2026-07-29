@@ -14,13 +14,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.time.LocalDate
@@ -79,7 +77,7 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
             when (item) {
                 is Cream -> db.CreamDao().insert(item)
                 is Area -> db.AreaDao().insert(item)
-                is record -> {
+                is Record -> {
                     try {
                         db.recordDao().insert(item)
                         _insertResult.value = OperationResult.Success
@@ -183,10 +181,10 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 BufferedReader(InputStreamReader(inputStream)).use {
                     reader ->
-                    val header = reader.readLine() ?: return@launch
+                    reader.readLine() ?: return@launch
 
                     val chunkSize = 1000
-                    val chunkBuffer = mutableListOf<record>()
+                    val chunkBuffer = mutableListOf<Record>()
                     var line: String?
 
                     while (reader.readLine().also { line = it } != null) {
@@ -210,11 +208,11 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         }
     }
 
-    private fun parseCsvToRecord(line: String): record? {
+    private fun parseCsvToRecord(line: String): Record? {
         val tokens = line.split(",")
         if (tokens.size < 3) return null
 
-        return record(
+        return Record(
             nameToID(Cream(tokens[0], 0)),
             nameToID(Area(tokens[1])),
             LocalDate.parse(tokens[2])

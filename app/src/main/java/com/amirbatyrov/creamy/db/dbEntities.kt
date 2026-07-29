@@ -54,7 +54,7 @@ data class Area(
     primaryKeys = ["cid", "aid", "date"],
     foreignKeys = [ForeignKey(entity = Cream::class, parentColumns = ["cid"], childColumns = ["cid"]),
         ForeignKey(entity = Area::class, parentColumns = ["aid"], childColumns = ["aid"])]
-) data class record(
+) data class Record(
     val cid: Long,
     val aid: Long,
     val date: LocalDate

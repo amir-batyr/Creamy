@@ -33,7 +33,7 @@ fun DropDownMenu(
                     text = { Text(option) },
                     onClick = {
                         value.value = option
-                        println(option)
+                        expanded.value = false
                     }
                 )
             }

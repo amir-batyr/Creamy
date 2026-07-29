@@ -24,7 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.db.OperationResult
-import com.amirbatyrov.creamy.db.record
+import com.amirbatyrov.creamy.db.Record
 import java.time.LocalDate
 
 
@@ -93,7 +93,7 @@ fun AddRecordDialog(
 
                         if (cid != null && aid != null) {
                             dbAccess.insert(
-                                record(
+                                Record(
                                     cid.cid,
                                     aid.aid,
                                     date.value

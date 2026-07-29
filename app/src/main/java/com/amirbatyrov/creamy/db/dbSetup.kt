@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [Cream::class, Area::class, record::class], version = 1)
+@Database(entities = [Cream::class, Area::class, Record::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class CreamyDB : RoomDatabase() {
     abstract fun CreamDao(): CreamDao

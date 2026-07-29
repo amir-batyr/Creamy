@@ -21,9 +21,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.SplitButtonDefaults
 import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.amirbatyrov.creamy.R
 import com.amirbatyrov.creamy.db.Area
@@ -79,7 +81,8 @@ fun SelectionEditMenu(
                                                 ButtonDefaults.buttonColors()
                                     ) {
                                         Text(
-                                            item.name
+                                            item.name,
+                                            color = if (item is Cream) Color.White else Color.Unspecified
                                         )
                                     }
                                 },
@@ -101,7 +104,8 @@ fun SelectionEditMenu(
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.delete),
-                                            contentDescription = "Edit"
+                                            contentDescription = "Edit",
+                                            tint = if (item is Cream) Color.White else LocalContentColor.current
                                         )
                                     }
                                 }

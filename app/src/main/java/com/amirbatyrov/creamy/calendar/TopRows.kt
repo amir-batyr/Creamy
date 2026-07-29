@@ -1,6 +1,5 @@
 package com.amirbatyrov.creamy.calendar
 
-import android.content.Context
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,8 +32,7 @@ fun TopRows(
     month: MutableState<String>,
     year: MutableState<String>,
     filter: MutableState<String>,
-    dbAccess: DBAccessModel,
-    context: Context
+    dbAccess: DBAccessModel
 ) {
     val areas by dbAccess.areaState.collectAsState()
 
@@ -66,6 +65,7 @@ fun TopRows(
         val areaNames = areas.map { it.name }.toTypedArray()
         DropDownMenu(filter, arrayOf("All", *areaNames), modifier)
 
+        val context = LocalContext.current
         OutlinedIconButton(
             onClick = {
                 dbAccess.writeAll(context)
@@ -76,6 +76,7 @@ fun TopRows(
             Icon(painter = painterResource(R.drawable.download), "Download", tint = ButtonDefaults.outlinedButtonColors().contentColor)
         }
 
+
         val csvPicker =
             rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
 
@@ -83,7 +84,6 @@ fun TopRows(
                     dbAccess.import(uri, context)
                 }
             }
-
         OutlinedIconButton(
             onClick = {
                 importDialog.value = true

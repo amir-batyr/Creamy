@@ -40,26 +40,26 @@ interface AreaDao {
 @Dao
 interface RecordDao {
     @Insert
-    fun insert(vararg record: record)
+    fun insert(vararg record: Record)
 
     @Insert
-    fun insertAll(record: List<record>)
+    fun insertAll(record: List<Record>)
 
-    @Query("DELETE FROM record")
+    @Query("DELETE FROM Record")
     fun deleteAll()
 
-    @Query("DELETE FROM record WHERE cid IN (SELECT cid FROM Cream WHERE name = :cream) AND aid IN (SELECT aid FROM Area WHERE name = :area) AND date = :date")
+    @Query("DELETE FROM Record WHERE cid IN (SELECT cid FROM Cream WHERE name = :cream) AND aid IN (SELECT aid FROM Area WHERE name = :area) AND date = :date")
     fun delete(cream: String, area: String, date: LocalDate)
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE record.date BETWEEN :start AND :end AND Area.name LIKE :area AND Cream.cid = record.cid AND Area.aid = record.aid")
+    @Query("SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color  FROM Record, Cream, Area WHERE Record.date BETWEEN :start AND :end AND Area.name LIKE :area AND Cream.cid = Record.cid AND Area.aid = Record.aid")
     fun getRecordsBetween(start: LocalDate, end: LocalDate, area: String = "%"): Flow<List<CreamColor>>
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, record.date, Cream.color  FROM record, Cream, Area WHERE Cream.cid = record.cid AND Area.aid = record.aid LIMIT :limit OFFSET :offset")
+    @Query("SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color  FROM Record, Cream, Area WHERE Cream.cid = Record.cid AND Area.aid = Record.aid LIMIT :limit OFFSET :offset")
     fun getChunk(limit: Int, offset: Int): List<CreamColor>
 
-    @Query("SELECT * FROM record WHERE cid = :cid")
-    fun getAllWithCream(cid: Long): List<record>
+    @Query("SELECT * FROM Record WHERE cid = :cid")
+    fun getAllWithCream(cid: Long): List<Record>
 
-    @Query("SELECT * FROM record WHERE aid = :aid")
-    fun getAllWithArea(aid: Long): List<record>
+    @Query("SELECT * FROM Record WHERE aid = :aid")
+    fun getAllWithArea(aid: Long): List<Record>
 }

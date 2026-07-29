@@ -1,6 +1,5 @@
 package com.amirbatyrov.creamy.calendar
 
-import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -35,8 +34,7 @@ import java.time.Month
 @Composable
 fun Calendar(
     innerPadding: PaddingValues,
-    dbAccess: DBAccessModel,
-    context: Context
+    dbAccess: DBAccessModel
 ) {
     Column(
         modifier = Modifier
@@ -55,7 +53,7 @@ fun Calendar(
         val year = remember { mutableStateOf(currentDate.year.toString()) }
         val filter = remember { mutableStateOf("All") }
 
-        TopRows(month, year, filter, dbAccess, context)
+        TopRows(month, year, filter, dbAccess)
 
         val deleteDialog = remember { mutableStateOf(false) }
         val selectedRecord: MutableState<CreamColor> = remember {

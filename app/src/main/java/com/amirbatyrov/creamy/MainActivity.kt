@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -36,7 +34,6 @@ class MainActivity : ComponentActivity() {
                 ).build()
 
                 val dbAccess = DBAccessModel(db)
-
                 val openAddRecord = remember { mutableStateOf(false) }
                 Scaffold(
                     floatingActionButton = {
@@ -57,10 +54,9 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Calendar(
                         innerPadding,
-                        dbAccess,
-                        this
+                        dbAccess
                     )
-                    AddRecordDialog(openAddRecord, dbAccess)
+                    AddRecordDialog(openAddRecord,dbAccess)
                 }
             }
         }
