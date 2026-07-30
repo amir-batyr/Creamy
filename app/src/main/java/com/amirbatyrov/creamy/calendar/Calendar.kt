@@ -4,12 +4,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.ExperimentalGridApi
+import androidx.compose.foundation.layout.Grid
+import androidx.compose.foundation.layout.GridTrackSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +29,7 @@ import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.db.RecordFilter
 import java.time.Month
 
+@OptIn(ExperimentalGridApi::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun Calendar(
@@ -72,50 +72,52 @@ fun Calendar(
                 1
             )
 
-        var firstDay = selectedMonth.dayOfWeek.value
-        if (firstDay == 7) firstDay = 0
+        val firstDay = selectedMonth.dayOfWeek.value
 
-        val previousMonth = selectedMonth.minusMonths(1)
-        val nextMonth = selectedMonth.plusMonths(1)
-        val dates = arrayOfNulls<LocalDate>(42)
-        for (i in 0 until 42) {
-            if (i < firstDay) {
-                dates[i] =
-                    previousMonth.withDayOfMonth(previousMonth.lengthOfMonth() - (firstDay - (i + 1)))
-            } else if (i < firstDay + selectedMonth.lengthOfMonth()) {
-                dates[i] = selectedMonth.withDayOfMonth((i + 1) - firstDay)
-            } else {
-                dates[i] =
-                    nextMonth.withDayOfMonth((i - (firstDay + selectedMonth.lengthOfMonth())) + 1)
-            }
+        val firstDate = if (firstDay == 7) {
+            selectedMonth.withDayOfMonth(1)
+        } else {
+            val prevMonth = selectedMonth.minusMonths(1)
+            prevMonth.withDayOfMonth(prevMonth.lengthOfMonth() - (firstDay - 1))
         }
+
+
         val rawRecords = dbAccess.recordState.collectAsState()
-        dbAccess.getRecordsBetween(RecordFilter(dates.first()!!, dates.last()!!, filter.value))
+        dbAccess.getRecordsBetween(RecordFilter(firstDate, firstDate.plusDays(41), filter.value))
         LaunchedEffect(filter) {
-            dbAccess.getRecordsBetween(RecordFilter(dates.first()!!, dates.last()!!, filter.value))
+            dbAccess.getRecordsBetween(
+                RecordFilter(
+                    firstDate,
+                    firstDate.plusDays(41),
+                    filter.value
+                )
+            )
         }
         val scrollState = rememberScrollState()
+
         BoxWithConstraints(modifier = Modifier.weight(1f)) {
             val minRowHeight = maxHeight / 6
-            Column(modifier = Modifier.verticalScroll(scrollState)) {
-                for (row in 0 until 6) {
-                    Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                        for (colum in 0 until 7) {
-                            val i = (row * 7) + colum
-
-                            Card(
-                                dates[i]!!,
-                                rawRecords.value.filter { it.date == dates[i] },
-                                Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .heightIn(min = minRowHeight),
-                                MaterialTheme.colorScheme.secondary,
-                                selectedRecord,
-                                deleteDialog
-                            )
-                        }
-                    }
+            val rowWidth = maxWidth / 7
+            Grid(config = {
+                repeat(7) {
+                    column(rowWidth)
+                }
+                repeat(6) {
+                    row(GridTrackSize.Auto)
+                }
+            },
+                modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                for (i in 0 until 42) {
+                    val date = firstDate.plusDays(i.toLong())
+                    Card(
+                        date,
+                        rawRecords.value.filter { it.date == date },
+                        Modifier
+                            .fillMaxSize().heightIn(min=minRowHeight),
+                        MaterialTheme.colorScheme.secondary,
+                        selectedRecord,
+                        deleteDialog
+                    )
                 }
             }
         }
