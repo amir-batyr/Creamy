@@ -29,6 +29,8 @@ sealed interface CreamOrAreaOrRecord
 
 data class CreamColor(val cream: String, val area: String, val date: LocalDate, val color: Int): CreamOrAreaOrCreamColor
 
+data class BasicRecord(val cream: String, val cid: Long, val area: String, val aid: Long, val color: Int)
+
 sealed interface CreamOrAreaOrCreamColor
 
 @Entity

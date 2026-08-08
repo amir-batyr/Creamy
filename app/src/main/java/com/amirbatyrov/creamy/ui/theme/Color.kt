@@ -1,4 +1,4 @@
-package com.amirbatyrov.creamy
+package com.amirbatyrov.creamy.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF415F91)

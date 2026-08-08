@@ -95,7 +95,7 @@ fun TopRows(
         }
 
         if (importDialog.value) {
-            ConfirmImport(importDialog) {
+            confirmImport(importDialog) {
                 csvPicker.launch(
                     arrayOf(
                         "text/csv", "text/comma-separated-values", "*/*"

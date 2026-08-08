@@ -58,6 +58,17 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         initialValue = emptyList()
     )
 
+    val selectedDate = MutableStateFlow(LocalDate.now())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val commonRecordsState = selectedDate.flatMapLatest {
+        db.recordDao().getCommonRecords(it.minusDays(10), it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
 
     private val _insertResult = MutableStateFlow<OperationResult>(OperationResult.Idle)
     val insertResult = _insertResult.asStateFlow()
@@ -70,6 +81,12 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
         newFilter: RecordFilter = filter.value
     ) {
         filter.value = newFilter
+    }
+
+    fun getCommonRecords(
+        newDate: LocalDate? = selectedDate.value
+    ) {
+        selectedDate.value = newDate
     }
 
     fun insert(item: CreamOrAreaOrRecord) {

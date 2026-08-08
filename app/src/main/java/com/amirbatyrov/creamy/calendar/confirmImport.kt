@@ -19,7 +19,7 @@ import com.amirbatyrov.creamy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfirmImport(
+fun confirmImport(
     openDialog: MutableState<Boolean>,
     onConfirm: () -> Unit
 ) {

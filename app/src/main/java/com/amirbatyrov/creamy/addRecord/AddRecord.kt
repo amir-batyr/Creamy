@@ -2,8 +2,10 @@ package com.amirbatyrov.creamy.addRecord
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -55,8 +58,8 @@ fun AddRecordDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                val cream = remember { mutableStateOf("Cream") }
-                val area = remember { mutableStateOf("Area") }
+                val cream = remember { mutableIntStateOf(-1) }
+                val area = remember { mutableIntStateOf(-1) }
                 val date = remember { mutableStateOf(LocalDate.now()) }
                 val creamDialog = remember { mutableStateOf(false) }
                 val areaDialog = remember { mutableStateOf(false) }
@@ -67,39 +70,55 @@ fun AddRecordDialog(
                     openDialog.value = false
                 }
                 Text("Add to Record", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
-                Button(onClick = {dateDialog.value = true}) {
-                    Text(date.value.toString())
-                }
 
-                if (dateDialog.value) {
-                    DatePicker(
-                        onDateSelected = { newDate -> date.value = newDate },
-                        onDismiss = { dateDialog.value = false })
+                Column(modifier = Modifier.width(IntrinsicSize.Max)) {
+                    Button(
+                        onClick = { dateDialog.value = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(date.value.toString())
+                    }
+
+                    if (dateDialog.value) {
+                        DatePicker(
+                            onDateSelected = { newDate -> date.value = newDate; dbAccess.getCommonRecords(newDate) },
+                            onDismiss = { dateDialog.value = false })
+                    }
+
+                    FormDropDown(
+                        cream,
+                        creams,
+                        onClick = { creamDialog.value = true },
+                        "Cream"
+                    )
+                    FormDropDown(
+                        area, areas, onClick = { areaDialog.value = true },
+                        "Area"
+                    )
+
+
                 }
-                FormDropDown(
-                    cream,
-                    creams,
-                    onClick = { creamDialog.value = true })
-                FormDropDown(area, areas, onClick = { areaDialog.value = true })
 
                 if (status == OperationResult.Error("Record already exists for this date.")) {
-                    Text("Record already exists for this date.", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        "Record already exists for this date.",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
 
                 Button(
                     onClick = {
-                        val cid = creams.find { it.name == cream.value }
-                        val aid = areas.find { it.name == area.value }
 
-                        if (cid != null && aid != null) {
+                        if (cream.intValue != -1 && area.intValue != -1) {
                             dbAccess.insert(
                                 Record(
-                                    cid.cid,
-                                    aid.aid,
+                                    creams[cream.intValue].cid,
+                                    areas[area.intValue].aid,
                                     date.value
                                 )
                             )
                         }
+
                     },
                     modifier = Modifier.padding(10.dp)
                 ) { Text("Add") }

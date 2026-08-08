@@ -78,7 +78,7 @@ fun Calendar(
             selectedMonth.withDayOfMonth(1)
         } else {
             val prevMonth = selectedMonth.minusMonths(1)
-            prevMonth.withDayOfMonth(prevMonth.lengthOfMonth() - (firstDay - 1))
+            prevMonth.withDayOfMonth(prevMonth.lengthOfMonth() - firstDay + 1)
         }
 
 

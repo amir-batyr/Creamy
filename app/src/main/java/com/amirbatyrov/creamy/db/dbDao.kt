@@ -48,13 +48,31 @@ interface RecordDao {
     @Query("DELETE FROM Record")
     fun deleteAll()
 
-    @Query("DELETE FROM Record WHERE cid IN (SELECT cid FROM Cream WHERE name = :cream) AND aid IN (SELECT aid FROM Area WHERE name = :area) AND date = :date")
+    @Query("""
+        DELETE FROM Record
+        WHERE cid IN (SELECT cid FROM Cream WHERE name = :cream)
+        AND aid IN (SELECT aid FROM Area WHERE name = :area)
+        AND date = :date
+        """)
     fun delete(cream: String, area: String, date: LocalDate)
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color  FROM Record, Cream, Area WHERE Record.date BETWEEN :start AND :end AND Area.name LIKE :area AND Cream.cid = Record.cid AND Area.aid = Record.aid")
+    @Query("""
+        SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color 
+        FROM Record
+        JOIN Cream ON Cream.cid = Record.cid
+        JOIN Area ON Area.aid = Record.aid
+        WHERE Record.date BETWEEN :start AND :end AND Area.name LIKE :area
+        ORDER BY Cream.name ASC, Area.name ASC
+        """)
     fun getRecordsBetween(start: LocalDate, end: LocalDate, area: String = "%"): Flow<List<CreamColor>>
 
-    @Query("SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color  FROM Record, Cream, Area WHERE Cream.cid = Record.cid AND Area.aid = Record.aid LIMIT :limit OFFSET :offset")
+    @Query("""
+        SELECT Cream.name AS cream, Area.name AS area, Record.date, Cream.color
+        FROM Record
+        JOIN Cream ON Cream.cid = Record.cid
+        JOIN Area ON Area.aid = Record.aid
+        LIMIT :limit OFFSET :offset
+        """)
     fun getChunk(limit: Int, offset: Int): List<CreamColor>
 
     @Query("SELECT * FROM Record WHERE cid = :cid")
@@ -62,4 +80,21 @@ interface RecordDao {
 
     @Query("SELECT * FROM Record WHERE aid = :aid")
     fun getAllWithArea(aid: Long): List<Record>
+
+    @Query("""
+            SELECT Cream.name AS cream, Record.cid AS cid, Area.name AS area, Record.aid AS aid, Cream.color AS color
+            FROM Record
+            JOIN Cream ON Cream.cid = Record.cid
+            JOIN Area ON Area.aid = Record.aid
+            WHERE Record.date BETWEEN :start AND :end
+            GROUP BY Cream.name, Area.name
+            HAVING NOT EXISTS (
+                SELECT 1 FROM Record R2 
+                WHERE R2.cid = Record.cid 
+                AND R2.aid = Record.aid 
+                AND R2.date = :end
+            )
+            ORDER BY COUNT(*) DESC
+            """)
+    fun getCommonRecords(start: LocalDate, end: LocalDate): Flow<List<BasicRecord>>
 }
