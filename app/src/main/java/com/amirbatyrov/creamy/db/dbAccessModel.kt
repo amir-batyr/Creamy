@@ -134,13 +134,8 @@ class DBAccessModel(private val db: CreamyDB) : ViewModel() {
     fun update(item: CreamOrArea) {
         viewModelScope.launch(Dispatchers.IO) {
             when (item) {
-                is Cream -> {
-                    db.CreamDao().update(item)
-                }
-
-                is Area -> {
-                    db.AreaDao().update(item)
-                }
+                is Cream -> db.CreamDao().update(item)
+                is Area -> db.AreaDao().update(item)
             }
         }
     }

@@ -24,7 +24,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.db.OperationResult
 import com.amirbatyrov.creamy.db.Record
@@ -34,17 +36,24 @@ import java.time.LocalDate
 @Composable
 fun AddRecordDialog(
     openDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
-    dbAccess: DBAccessModel
+    vmFactory: ViewModelProvider.Factory,
+    dbAccess: DBAccessModel = viewModel(factory = vmFactory)
 ) {
+    // Reset status whenever the dialog is opened or closed
     LaunchedEffect(openDialog.value) {
-        if (!openDialog.value) {
-            dbAccess.resetInsertResult()
-        }
+        dbAccess.resetInsertResult()
     }
-
     if (openDialog.value) {
 
         Dialog(onDismissRequest = { openDialog.value = false }) {
+            val status by dbAccess.insertResult.collectAsState()
+
+            // Handle auto-close only on success
+            LaunchedEffect(status) {
+                if (status == OperationResult.Success) {
+                    openDialog.value = false
+                }
+            }
 
             val creams by dbAccess.creamState.collectAsStateWithLifecycle()
             val areas by dbAccess.areaState.collectAsStateWithLifecycle()
@@ -64,11 +73,15 @@ fun AddRecordDialog(
                 val creamDialog = remember { mutableStateOf(false) }
                 val areaDialog = remember { mutableStateOf(false) }
                 val dateDialog = remember { mutableStateOf(false) }
-                val status by dbAccess.insertResult.collectAsState()
 
-                if (status == OperationResult.Success) {
-                    openDialog.value = false
+
+                LaunchedEffect(openDialog.value, status) {
+                    if (!openDialog.value || status == OperationResult.Success) {
+                        openDialog.value = false
+                        dbAccess.resetInsertResult()
+                    }
                 }
+
                 Text("Add to Record", fontSize = 24.sp, modifier = Modifier.padding(10.dp))
 
                 Column(modifier = Modifier.width(IntrinsicSize.Max)) {

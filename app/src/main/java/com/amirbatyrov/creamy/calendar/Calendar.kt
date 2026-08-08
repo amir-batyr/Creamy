@@ -21,6 +21,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.amirbatyrov.creamy.db.CreamColor
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -34,7 +36,8 @@ import java.time.Month
 @Composable
 fun Calendar(
     innerPadding: PaddingValues,
-    dbAccess: DBAccessModel
+    vmFactory: ViewModelProvider.Factory,
+    dbAccess: DBAccessModel = viewModel(factory = vmFactory)
 ) {
     Column(
         modifier = Modifier
@@ -83,8 +86,8 @@ fun Calendar(
 
 
         val rawRecords = dbAccess.recordState.collectAsState()
-        dbAccess.getRecordsBetween(RecordFilter(firstDate, firstDate.plusDays(41), filter.value))
-        LaunchedEffect(filter) {
+
+        LaunchedEffect(filter.value, firstDate) {
             dbAccess.getRecordsBetween(
                 RecordFilter(
                     firstDate,
@@ -98,22 +101,27 @@ fun Calendar(
         BoxWithConstraints(modifier = Modifier.weight(1f)) {
             val minRowHeight = maxHeight / 6
             val rowWidth = maxWidth / 7
-            Grid(config = {
-                repeat(7) {
-                    column(rowWidth)
-                }
-                repeat(6) {
-                    row(GridTrackSize.Auto)
-                }
-            },
-                modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+            Grid(
+                config = {
+                    repeat(7) {
+                        column(rowWidth)
+                    }
+                    repeat(6) {
+                        row(GridTrackSize.Auto)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            ) {
                 for (i in 0 until 42) {
                     val date = firstDate.plusDays(i.toLong())
                     Card(
                         date,
                         rawRecords.value.filter { it.date == date },
                         Modifier
-                            .fillMaxSize().heightIn(min=minRowHeight),
+                            .fillMaxSize()
+                            .heightIn(min = minRowHeight),
                         MaterialTheme.colorScheme.secondary,
                         selectedRecord,
                         deleteDialog

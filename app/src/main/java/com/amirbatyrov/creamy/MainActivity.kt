@@ -11,9 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -24,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room.Room
 import com.amirbatyrov.creamy.addRecord.AddRecordDialog
 import com.amirbatyrov.creamy.calendar.Calendar
@@ -38,19 +38,27 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CreamyTheme {
-                val db = Room.databaseBuilder(
-                    applicationContext,
-                    CreamyDB::class.java, "Creamy"
-                ).build()
 
-                val dbAccess = DBAccessModel(db)
+
+                val vmFactory = remember {
+                    viewModelFactory {
+                        initializer {
+                            val db = Room.databaseBuilder(
+                                applicationContext,
+                                CreamyDB::class.java, "Creamy"
+                            ).build()
+                            DBAccessModel(db)
+                        }
+                    }
+                }
+
                 val openAddRecord = remember { mutableStateOf(false) }
-                val FABopen = remember { mutableStateOf(false) }
+                val fabOpen = remember { mutableStateOf(false) }
                 Scaffold(
                     floatingActionButton = {
                         FABmenu(
-                            FABopen,
-                            dbAccess,
+                            fabOpen,
+                            vmFactory,
                             openAddRecord,
                             modifier = Modifier.offset(x = 16.dp, y = 16.dp)
                         )
@@ -58,11 +66,11 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Calendar(
                         innerPadding,
-                        dbAccess
+                        vmFactory
                     )
-                    AddRecordDialog(openAddRecord, dbAccess)
+                    AddRecordDialog(openAddRecord, vmFactory)
                     AnimatedVisibility(
-                        visible = FABopen.value,
+                        visible = fabOpen.value,
                         enter = fadeIn(animationSpec = tween(durationMillis = 300)),
                         exit = fadeOut(animationSpec = tween(durationMillis = 300))
                     ) {

@@ -9,12 +9,13 @@ import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.amirbatyrov.creamy.db.DBAccessModel
 import com.amirbatyrov.creamy.db.Record
 import com.amirbatyrov.creamy.ui.theme.setColors
@@ -23,10 +24,11 @@ import java.time.LocalDate
 @Composable
 fun FABmenu(
     open: MutableState<Boolean>,
-    dbAccess: DBAccessModel,
+    vmFactory: ViewModelProvider.Factory,
     openAddRecord: MutableState<Boolean>,
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    dbAccess: DBAccessModel = viewModel(factory = vmFactory),
+    ) {
     val commonRecords = dbAccess.commonRecordsState.collectAsStateWithLifecycle()
     FloatingActionButtonMenu(
         modifier = modifier,
